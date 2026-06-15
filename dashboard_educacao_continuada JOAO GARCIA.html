@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dashboard — Educação Continuada</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#eef1f6;color:#1a1f2e;font-size:13px}
+.wrap{max-width:1100px;margin:0 auto;padding:28px 24px}
+
+/* HEADER */
+.hdr{background:linear-gradient(135deg,#1a3a6b 0%,#2a5298 70%,#3563b8 100%);border-radius:14px;padding:32px 36px;margin-bottom:24px;position:relative;overflow:hidden}
+.hdr::after{content:'';position:absolute;right:-40px;top:-40px;width:200px;height:200px;background:rgba(255,255,255,.05);border-radius:50%}
+.hdr::before{content:'';position:absolute;right:80px;bottom:-60px;width:140px;height:140px;background:rgba(255,255,255,.04);border-radius:50%}
+.hdr-top{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px}
+.hdr-left .hdr-tag{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#90b8f0;margin-bottom:8px}
+.hdr-left h1{font-size:24px;font-weight:800;color:#fff;margin-bottom:6px;letter-spacing:-.3px}
+.hdr-left .hdr-sub{font-size:12px;color:#aac4e8}
+.hdr-stats{display:flex;gap:20px;flex-wrap:wrap;position:relative;z-index:1}
+.hstat{text-align:center;background:rgba(255,255,255,.1);border-radius:10px;padding:12px 20px;backdrop-filter:blur(4px)}
+.hstat-v{font-size:22px;font-weight:800;color:#fff;line-height:1}
+.hstat-l{font-size:10px;font-weight:600;color:#aac4e8;text-transform:uppercase;letter-spacing:.08em;margin-top:4px}
+.hdr-meta{display:flex;gap:24px;flex-wrap:wrap;margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,.12)}
+.hm{font-size:11px;color:#90b8f0}.hm strong{color:#fff;font-weight:600}
+
+/* NAV — underline style */
+.nav{display:flex;gap:2px;margin-bottom:24px;border-bottom:2px solid #e2e8f0;padding-bottom:0}
+.nb{font-size:12px;padding:8px 16px;border:none;background:transparent;color:#718096;cursor:pointer;font-weight:500;position:relative;transition:.15s;border-radius:6px 6px 0 0;font-family:inherit}
+.nb:hover{color:#2a5298;background:#f0f4fb}
+.nb.on{color:#2a5298;font-weight:700}
+.nb.on::after{content:'';position:absolute;bottom:-2px;left:0;right:0;height:2px;background:#2a5298;border-radius:2px 2px 0 0}
+
+/* PAGES */
+.pg{display:none}.pg.on{display:block}
+.ph{font-size:16px;font-weight:700;color:#1a1f2e;margin-bottom:3px}
+.ps{font-size:11px;color:#a0aec0;margin-bottom:18px}
+
+/* SECTION LABEL */
+.sl{font-size:10px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:#2a5298;padding-left:10px;border-left:3px solid #2a5298;margin:24px 0 12px}
+
+/* KPI CARDS — borda esquerda */
+.kg{display:grid;gap:10px;margin-bottom:6px}
+.g5{grid-template-columns:repeat(5,1fr)}.g4{grid-template-columns:repeat(4,1fr)}.g3{grid-template-columns:repeat(3,1fr)}.g2{grid-template-columns:repeat(2,1fr)}
+.kc{background:#fff;border-radius:10px;padding:14px 16px 12px;border:1px solid #e8edf5;border-left:4px solid #e8edf5;box-shadow:0 1px 4px rgba(0,0,0,.05);display:flex;gap:12px;align-items:flex-start}
+.kc.bl{border-left-color:#2a5298}.kc.gr{border-left-color:#276749}.kc.rd{border-left-color:#c53030}.kc.yw{border-left-color:#b7791f}.kc.pu{border-left-color:#553c9a}
+.kico{font-size:20px;line-height:1;margin-top:2px;opacity:.85}
+.kbody{flex:1}
+.kl{font-size:9px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#a0aec0;margin-bottom:5px}
+.kv{font-size:20px;font-weight:800;color:#1a1f2e;line-height:1;letter-spacing:-.3px}
+.ks{font-size:10px;margin-top:4px;color:#a0aec0}
+.ks.up{color:#276749}.ks.dn{color:#c53030}.ks.wn{color:#b7791f}
+
+/* CHART BOXES */
+.cbox{background:#fff;border-radius:12px;padding:18px;border:1px solid #e8edf5;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.ctitle{font-size:11px;font-weight:600;color:#4a5568;margin-bottom:14px}
+.row{display:grid;gap:12px}
+
+/* INLINE BARS */
+.brow{display:flex;align-items:center;gap:10px;margin-bottom:7px}
+.blb{min-width:82px;font-size:11px;color:#4a5568;font-weight:500}
+.btr{flex:1;height:8px;background:#edf2f7;border-radius:6px;overflow:hidden}
+.bfi{height:8px;border-radius:6px}
+.bvl{min-width:38px;text-align:right;font-size:11px;font-weight:700;color:#1a1f2e}
+
+/* GAUGES */
+.gg{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:6px}
+.gc{background:#fff;border-radius:10px;padding:16px 14px;border:1px solid #e8edf5;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.gv{font-size:26px;font-weight:800;line-height:1;margin-bottom:8px;letter-spacing:-.5px}
+.gb{height:6px;background:#edf2f7;border-radius:4px;margin-bottom:6px;overflow:hidden}
+.gf{height:6px;border-radius:4px}
+.gl{font-size:9px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#a0aec0}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;font-size:11px}
+.tbl th{text-align:left;font-weight:700;font-size:9px;letter-spacing:.09em;text-transform:uppercase;color:#a0aec0;padding:9px 12px;border-bottom:2px solid #edf2f7;background:#f9fbfd}
+.tbl td{padding:9px 12px;border-bottom:1px solid #f0f4f8;color:#2d3748}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:#f7fafc}
+.bdg{display:inline-block;font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px}
+.bg{background:#c6f6d5;color:#22543d}.br{background:#fed7d7;color:#742a2a}.bb{background:#bee3f8;color:#2a4365}.by{background:#fefcbf;color:#744210}
+
+/* INSIGHTS */
+.ig{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px}
+.ins{border-radius:8px;border-left:3px solid;padding:10px 14px;font-size:11px;line-height:1.7}
+.ins.gr{background:#f0fff4;border-color:#276749;color:#22543d}
+.ins.rd{background:#fff5f5;border-color:#c53030;color:#742a2a}
+.ins.yw{background:#fffff0;border-color:#b7791f;color:#744210}
+.ins.bl{background:#ebf8ff;border-color:#2a5298;color:#2a4365}
+
+/* LEGEND */
+.leg{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:10px;font-size:10px;color:#4a5568;font-weight:500}
+.leg span{display:flex;align-items:center;gap:5px}
+.lsq{width:9px;height:9px;border-radius:2px;display:inline-block;flex-shrink:0}
+
+/* FOOTER */
+.ftr{margin-top:36px;padding-top:18px;border-top:1px solid #e8edf5;display:flex;justify-content:space-between;font-size:10px;color:#c0c8d8}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="hdr">
+  <div class="hdr-top">
+    <div class="hdr-left">
+      <div class="hdr-tag">📊 Dashboard Analytics</div>
+      <h1>Educação Continuada</h1>
+      <div class="hdr-sub">Plataforma de inteligência analítica · KPIs acadêmicos, financeiros e comerciais</div>
+    </div>
+    <div class="hdr-stats">
+      <div class="hstat"><div class="hstat-v">R$ 341M</div><div class="hstat-l">Receita Total</div></div>
+      <div class="hstat"><div class="hstat-v">28.000</div><div class="hstat-l">Matrículas</div></div>
+      <div class="hstat"><div class="hstat-v">79,0</div><div class="hstat-l">NPS Médio</div></div>
+    </div>
+  </div>
+  <div class="hdr-meta">
+    <div class="hm">Período: <strong>2022 – 2025</strong></div>
+    <div class="hm">Alunos únicos: <strong>12.000</strong></div>
+    <div class="hm">Certificados: <strong>18.569</strong></div>
+    <div class="hm">Stack: <strong>Python · Streamlit · Plotly</strong></div>
+  </div>
+</div>
+
+<div class="nav">
+  <button class="nb on" data-p="geral">🏠 Visão Geral</button>
+  <button class="nb" data-p="fin">💰 Financeiro</button>
+  <button class="nb" data-p="acad">🎓 Acadêmico</button>
+  <button class="nb" data-p="mkt">📣 Marketing</button>
+  <button class="nb" data-p="inad">⚠️ Inadimplência</button>
+  <button class="nb" data-p="rank">🏆 Ranking Cursos</button>
+</div>
+
+<!-- VISÃO GERAL -->
+<div class="pg on" id="pg-geral">
+  <p class="ph">Visão Geral</p>
+  <p class="ps">Painel consolidado de todos os KPIs estratégicos · 2022–2025</p>
+  <div class="sl">Financeiro</div>
+  <div class="kg g5">
+    <div class="kc bl"><div class="kico">💵</div><div class="kbody"><div class="kl">Receita Total</div><div class="kv">R$ 341,3M</div><div class="ks">pagamentos efetivos</div></div></div>
+    <div class="kc bl"><div class="kico">📋</div><div class="kbody"><div class="kl">Receita Bruta</div><div class="kv">R$ 431,7M</div><div class="ks">valor matriculado</div></div></div>
+    <div class="kc bl"><div class="kico">🎫</div><div class="kbody"><div class="kl">Ticket Médio</div><div class="kv">R$ 14.265</div></div></div>
+    <div class="kc rd"><div class="kico">📉</div><div class="kbody"><div class="kl">Gap Receita</div><div class="kv">R$ 90,5M</div><div class="ks dn">21% não virou caixa</div></div></div>
+    <div class="kc gr"><div class="kico">🏅</div><div class="kbody"><div class="kl">Certificados</div><div class="kv">18.569</div><div class="ks up">emitidos</div></div></div>
+  </div>
+  <div class="sl">Acadêmico e Comercial</div>
+  <div class="kg" style="grid-template-columns:repeat(6,1fr)">
+    <div class="kc bl"><div class="kico">📚</div><div class="kbody"><div class="kl">Matrículas</div><div class="kv">28.000</div></div></div>
+    <div class="kc bl"><div class="kico">👥</div><div class="kbody"><div class="kl">Alunos Únicos</div><div class="kv">12.000</div><div class="ks">2,3 cursos/aluno</div></div></div>
+    <div class="kc gr"><div class="kico">✅</div><div class="kbody"><div class="kl">Conclusão</div><div class="kv">66,3%</div><div class="ks up">✔ saudável</div></div></div>
+    <div class="kc rd"><div class="kico">⚠️</div><div class="kbody"><div class="kl">Evasão</div><div class="kv">26,5%</div><div class="ks dn">acima do ideal</div></div></div>
+    <div class="kc gr"><div class="kico">🔄</div><div class="kbody"><div class="kl">Recompra</div><div class="kv">30,1%</div><div class="ks up">✔ fidelização</div></div></div>
+    <div class="kc yw"><div class="kico">💳</div><div class="kbody"><div class="kl">Inadimplência</div><div class="kv">6,1%</div></div></div>
+  </div>
+  <div class="sl">Qualidade</div>
+  <div class="gg">
+    <div class="gc"><div class="gv" style="color:#276749">79,0</div><div class="gb"><div class="gf" style="width:79%;background:#276749"></div></div><div class="gl">NPS Médio</div></div>
+    <div class="gc"><div class="gv" style="color:#276749">75,6</div><div class="gb"><div class="gf" style="width:75.6%;background:#276749"></div></div><div class="gl">Satisfação</div></div>
+    <div class="gc"><div class="gv" style="color:#276749">90,2</div><div class="gb"><div class="gf" style="width:90%;background:#276749"></div></div><div class="gl">Nota Professor</div></div>
+    <div class="gc"><div class="gv" style="color:#b7791f">72,3</div><div class="gb"><div class="gf" style="width:72%;background:#b7791f"></div></div><div class="gl">Nota Plataforma</div></div>
+  </div>
+  <div class="sl">Receita Mensal 2022–2025</div>
+  <div class="cbox">
+    <div class="leg">
+      <span><span class="lsq" style="background:#2a5298"></span>Receita mensal</span>
+      <span><span class="lsq" style="background:#b7791f;height:3px;border-radius:0;width:14px;margin-top:3px"></span>Média móvel 3m</span>
+    </div>
+    <div style="position:relative;width:100%;height:180px"><canvas id="cRecGeral"></canvas></div>
+  </div>
+  <div class="row" style="grid-template-columns:3fr 2fr">
+    <div class="cbox">
+      <div class="ctitle">Evasão por Modalidade</div>
+      <div class="brow"><span class="blb">EAD</span><div class="btr"><div class="bfi" style="width:100%;background:#c53030"></div></div><span class="bvl">33,1%</span></div>
+      <div class="brow"><span class="blb">Presencial</span><div class="btr"><div class="bfi" style="width:62%;background:#b7791f"></div></div><span class="bvl">20,7%</span></div>
+      <div class="brow"><span class="blb">Híbrido</span><div class="btr"><div class="bfi" style="width:61%;background:#b7791f"></div></div><span class="bvl">20,3%</span></div>
+      <div class="brow"><span class="blb">Live</span><div class="btr"><div class="bfi" style="width:52%;background:#276749"></div></div><span class="bvl">17,3%</span></div>
+      <div style="margin-top:16px" class="ctitle">ROI por Canal</div>
+      <div class="brow"><span class="blb">Meta Ads</span><div class="btr"><div class="bfi" style="width:100%;background:#276749"></div></div><span class="bvl">2,93x</span></div>
+      <div class="brow"><span class="blb">Evento</span><div class="btr"><div class="bfi" style="width:87%;background:#276749"></div></div><span class="bvl">2,54x</span></div>
+      <div class="brow"><span class="blb">Google Ads</span><div class="btr"><div class="bfi" style="width:80%;background:#2a5298"></div></div><span class="bvl">2,34x</span></div>
+      <div class="brow"><span class="blb">LinkedIn</span><div class="btr"><div class="bfi" style="width:71%;background:#b7791f"></div></div><span class="bvl">2,07x</span></div>
+    </div>
+    <div class="cbox">
+      <div class="ctitle">Status das Matrículas</div>
+      <div class="leg">
+        <span><span class="lsq" style="background:#276749"></span>Concluída</span>
+        <span><span class="lsq" style="background:#c53030"></span>Cancelada</span>
+        <span><span class="lsq" style="background:#2a5298"></span>Ativa</span>
+        <span><span class="lsq" style="background:#b7791f"></span>Evadida</span>
+        <span><span class="lsq" style="background:#718096"></span>Trancada</span>
+      </div>
+      <div style="position:relative;width:100%;height:200px"><canvas id="cStatus"></canvas></div>
+    </div>
+  </div>
+  <div class="sl">Alertas e Insights</div>
+  <div class="ig">
+    <div class="ins gr">✔ <strong>NPS 79,0</strong> — nível de excelência mundial. Principal ativo de crescimento orgânico.</div>
+    <div class="ins rd">⚠ <strong>Evasão 26,5%</strong> — acima do benchmark de mercado (10–20%). Concentrada no EAD.</div>
+    <div class="ins gr">✔ <strong>Recompra 30,1%</strong> — cada aluno faz em média 2,3 cursos. LTV elevado.</div>
+    <div class="ins rd">⚠ <strong>Plataforma 72,3 vs Professor 90,2</strong> — gap de 17,9 pts afeta retenção no EAD (43% da receita).</div>
+    <div class="ins yw">💡 <strong>Gap R$ 90,5M</strong> entre receita bruta e efetiva — 21% do potencial não virou caixa.</div>
+    <div class="ins bl">→ <strong>58,2% da inadimplência</strong> está acima de 60 dias. Antecipar a régua de cobrança é prioritário.</div>
+  </div>
+</div>
+
+<!-- FINANCEIRO -->
+<div class="pg" id="pg-fin">
+  <p class="ph">Análise Financeira</p>
+  <p class="ps">Receita, ticket médio, cohort e distribuição por categoria e modalidade</p>
+  <div class="kg g4">
+    <div class="kc bl"><div class="kico">💵</div><div class="kbody"><div class="kl">Receita Total</div><div class="kv">R$ 341,3M</div></div></div>
+    <div class="kc bl"><div class="kico">📋</div><div class="kbody"><div class="kl">Receita Bruta</div><div class="kv">R$ 431,7M</div></div></div>
+    <div class="kc gr"><div class="kico">🎫</div><div class="kbody"><div class="kl">Ticket Médio</div><div class="kv">R$ 14.265</div></div></div>
+    <div class="kc rd"><div class="kico">📉</div><div class="kbody"><div class="kl">Gap Total</div><div class="kv">R$ 90,5M</div><div class="ks dn">21% da receita bruta</div></div></div>
+  </div>
+  <div class="sl">Evolução Mensal com Média Móvel 3m</div>
+  <div class="cbox">
+    <div class="leg">
+      <span><span class="lsq" style="background:#2a5298"></span>Receita mensal</span>
+      <span><span class="lsq" style="background:#b7791f;height:3px;border-radius:0;width:14px;margin-top:3px"></span>Média móvel 3m</span>
+    </div>
+    <div style="position:relative;width:100%;height:200px"><canvas id="cRecFin"></canvas></div>
+  </div>
+  <div class="row" style="grid-template-columns:1fr 1fr">
+    <div class="cbox">
+      <div class="ctitle">Receita por Categoria</div>
+      <div style="position:relative;width:100%;height:200px"><canvas id="cCateg"></canvas></div>
+    </div>
+    <div class="cbox">
+      <div class="ctitle">Receita por Modalidade</div>
+      <div class="leg">
+        <span><span class="lsq" style="background:#2a5298"></span>EAD R$173M</span>
+        <span><span class="lsq" style="background:#553c9a"></span>Híbrido R$102M</span>
+        <span><span class="lsq" style="background:#276749"></span>Presencial R$97M</span>
+        <span><span class="lsq" style="background:#b7791f"></span>Live R$28M</span>
+      </div>
+      <div style="position:relative;width:100%;height:170px"><canvas id="cMod"></canvas></div>
+    </div>
+  </div>
+  <div class="sl">Ticket Médio Trimestral</div>
+  <div class="cbox"><div style="position:relative;width:100%;height:160px"><canvas id="cTicket"></canvas></div></div>
+  <div class="sl">Matrículas por Trimestre</div>
+  <div class="cbox"><div style="position:relative;width:100%;height:160px"><canvas id="cCohortM"></canvas></div></div>
+</div>
+
+<!-- ACADÊMICO -->
+<div class="pg" id="pg-acad">
+  <p class="ph">Análise Acadêmica</p>
+  <p class="ps">Evasão, conclusão, qualidade e recompra</p>
+  <div class="sl">Indicadores de Qualidade</div>
+  <div class="gg">
+    <div class="gc"><div class="gv" style="color:#276749">79,0</div><div class="gb"><div class="gf" style="width:79%;background:#276749"></div></div><div class="gl">NPS Médio</div></div>
+    <div class="gc"><div class="gv" style="color:#276749">75,6</div><div class="gb"><div class="gf" style="width:75.6%;background:#276749"></div></div><div class="gl">Satisfação</div></div>
+    <div class="gc"><div class="gv" style="color:#276749">90,2</div><div class="gb"><div class="gf" style="width:90%;background:#276749"></div></div><div class="gl">Nota Professor</div></div>
+    <div class="gc"><div class="gv" style="color:#b7791f">72,3</div><div class="gb"><div class="gf" style="width:72%;background:#b7791f"></div></div><div class="gl">Nota Plataforma</div></div>
+  </div>
+  <div class="row" style="grid-template-columns:1fr 1fr">
+    <div class="cbox">
+      <div class="ctitle">Evasão por Categoria (%)</div>
+      <div style="position:relative;width:100%;height:200px"><canvas id="cEvasCat"></canvas></div>
+    </div>
+    <div class="cbox">
+      <div class="ctitle">Conclusão vs Evasão por Modalidade</div>
+      <div class="leg">
+        <span><span class="lsq" style="background:#276749"></span>Conclusão</span>
+        <span><span class="lsq" style="background:#c53030"></span>Evasão</span>
+      </div>
+      <div style="position:relative;width:100%;height:180px"><canvas id="cConcEvas"></canvas></div>
+    </div>
+  </div>
+  <div class="sl">Taxa de Evasão por Trimestre</div>
+  <div class="cbox"><div style="position:relative;width:100%;height:160px"><canvas id="cCohortEv"></canvas></div></div>
+</div>
+
+<!-- MARKETING -->
+<div class="pg" id="pg-mkt">
+  <p class="ph">Marketing e Canais</p>
+  <p class="ps">Performance de captação, conversão e ROI por canal</p>
+  <div class="kg g4">
+    <div class="kc bl"><div class="kico">🎯</div><div class="kbody"><div class="kl">Total Leads</div><div class="kv">30.000</div></div></div>
+    <div class="kc gr"><div class="kico">📈</div><div class="kbody"><div class="kl">Conversão</div><div class="kv">22,4%</div></div></div>
+    <div class="kc pu"><div class="kico">💰</div><div class="kbody"><div class="kl">CAC Médio</div><div class="kv">R$ 785</div></div></div>
+    <div class="kc pu"><div class="kico">🚀</div><div class="kbody"><div class="kl">ROI Médio</div><div class="kv">2,37x</div></div></div>
+  </div>
+  <div class="row" style="grid-template-columns:1fr 1fr">
+    <div class="cbox">
+      <div class="ctitle">ROI por Canal</div>
+      <div style="position:relative;height:220px"><canvas id="cRoi"></canvas></div>
+    </div>
+    <div class="cbox">
+      <div class="ctitle">Investimento × Leads por Canal</div>
+      <div class="leg">
+        <span><span class="lsq" style="background:#553c9a"></span>Investimento</span>
+        <span><span class="lsq" style="background:#2a5298"></span>Leads</span>
+      </div>
+      <div style="position:relative;height:200px"><canvas id="cInvest"></canvas></div>
+    </div>
+  </div>
+  <div class="sl">Tabela Completa de Canais</div>
+  <div class="cbox" style="padding:0;overflow:hidden">
+    <table class="tbl">
+      <tr><th>Canal</th><th>Investimento</th><th>Leads</th><th>Conversões</th><th>Conv. %</th><th>CPL</th><th>ROI</th></tr>
+      <tr><td>Meta Ads</td><td>R$ 1.652.105</td><td>45.896</td><td>4.840</td><td>10,5%</td><td>R$ 36,00</td><td><span class="bdg bg">2,93x ✔</span></td></tr>
+      <tr><td>Evento</td><td>R$ 1.467.637</td><td>27.389</td><td>2.274</td><td>8,3%</td><td>R$ 53,58</td><td>2,54x</td></tr>
+      <tr><td>Parceiro</td><td>R$ 1.677.623</td><td>27.124</td><td>2.376</td><td>8,8%</td><td>R$ 61,85</td><td>2,40x</td></tr>
+      <tr><td>Google Ads</td><td>R$ 2.266.498</td><td>59.574</td><td>5.212</td><td>8,7%</td><td>R$ 38,05</td><td>2,34x</td></tr>
+      <tr><td>LinkedIn Ads</td><td>R$ 2.515.370</td><td>41.027</td><td>3.766</td><td>9,2%</td><td>R$ 61,31</td><td><span class="bdg by">2,07x</span></td></tr>
+      <tr><td>E-mail</td><td>R$ 1.425.666</td><td>44.237</td><td>4.446</td><td>10,1%</td><td>R$ 32,23</td><td><span class="bdg by">2,04x</span></td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- INADIMPLÊNCIA -->
+<div class="pg" id="pg-inad">
+  <p class="ph">Inadimplência</p>
+  <p class="ps">Aging de inadimplência e análise de risco financeiro</p>
+  <div class="kg g4">
+    <div class="kc rd"><div class="kico">🔴</div><div class="kbody"><div class="kl">Total Inadimplente</div><div class="kv">R$ 16,6M</div></div></div>
+    <div class="kc yw"><div class="kico">📊</div><div class="kbody"><div class="kl">Taxa</div><div class="kv">6,1%</div></div></div>
+    <div class="kc gr"><div class="kico">✅</div><div class="kbody"><div class="kl">Recuperável ≤30d</div><div class="kv">R$ 2,75M</div><div class="ks up">16,5% — aja agora</div></div></div>
+    <div class="kc rd"><div class="kico">⛔</div><div class="kbody"><div class="kl">Risco alto >60d</div><div class="kv">R$ 9,68M</div><div class="ks dn">58,2% do total</div></div></div>
+  </div>
+  <div class="row" style="grid-template-columns:3fr 2fr">
+    <div class="cbox">
+      <div class="ctitle">Aging — Valor por Faixa de Atraso</div>
+      <div style="position:relative;width:100%;height:220px"><canvas id="cAging"></canvas></div>
+    </div>
+    <div class="cbox">
+      <div class="ctitle">Distribuição % por Faixa</div>
+      <div class="leg">
+        <span><span class="lsq" style="background:#276749"></span>Até 30d 16,5%</span>
+        <span><span class="lsq" style="background:#b7791f"></span>31–60d 25,3%</span>
+        <span><span class="lsq" style="background:#c05010"></span>61–90d 27,7%</span>
+        <span><span class="lsq" style="background:#c53030"></span>91–180d 30,5%</span>
+      </div>
+      <div style="position:relative;width:100%;height:190px"><canvas id="cAgingD"></canvas></div>
+    </div>
+  </div>
+  <div class="sl">Tabela de Aging</div>
+  <div class="cbox" style="padding:0;overflow:hidden">
+    <table class="tbl">
+      <tr><th>Faixa</th><th>Valor</th><th>Casos</th><th>% Total</th><th>Recuperabilidade</th></tr>
+      <tr><td>Até 30 dias</td><td>R$ 2.750.800</td><td>255</td><td>16,5%</td><td><span class="bdg bg">Alta — aja agora</span></td></tr>
+      <tr><td>31–60 dias</td><td>R$ 4.211.959</td><td>456</td><td>25,3%</td><td><span class="bdg by">Média</span></td></tr>
+      <tr><td>61–90 dias</td><td>R$ 4.608.008</td><td>475</td><td>27,7%</td><td><span class="bdg br">Baixa</span></td></tr>
+      <tr><td>91–180 dias</td><td>R$ 5.070.091</td><td>516</td><td>30,5%</td><td><span class="bdg br">Muito Baixa</span></td></tr>
+    </table>
+  </div>
+  <div class="sl">Alertas</div>
+  <div class="ig">
+    <div class="ins gr">✔ Aja imediatamente nos 255 casos até 30d — alta chance de recuperação com simples lembrete.</div>
+    <div class="ins rd">⚠ 58,2% do valor está acima de 60 dias — baixa recuperabilidade. Considere negociação com desconto.</div>
+    <div class="ins yw">💡 Priorize a régua de cobrança nos primeiros 30 dias. Evitar envelhecimento é mais eficaz que recuperar.</div>
+    <div class="ins bl">→ Taxa de 6,1% é relativamente baixa — a evasão não é motivada por dificuldade financeira.</div>
+  </div>
+</div>
+
+<!-- RANKING -->
+<div class="pg" id="pg-rank">
+  <p class="ph">Ranking de Cursos</p>
+  <p class="ps">Top cursos por NPS, ROI e evasão</p>
+  <div class="row" style="grid-template-columns:1fr 1fr">
+    <div class="cbox">
+      <div class="ctitle">NPS Médio por Categoria</div>
+      <div style="position:relative;width:100%;height:200px"><canvas id="cNpsCat"></canvas></div>
+    </div>
+    <div class="cbox">
+      <div class="ctitle">Evasão por Categoria (%)</div>
+      <div style="position:relative;width:100%;height:200px"><canvas id="cEvasCat2"></canvas></div>
+    </div>
+  </div>
+  <div class="sl">Top 10 Cursos por NPS</div>
+  <div class="cbox" style="padding:0;overflow:hidden">
+    <table class="tbl">
+      <tr><th>#</th><th>Curso</th><th>Categoria</th><th>NPS</th><th>Evasão</th><th>ROI</th></tr>
+      <tr><td>1</td><td>Gestão da Manutenção - Engenharia</td><td>Pós-graduação</td><td><span class="bdg bg">91</span></td><td>7%</td><td>2,46x</td></tr>
+      <tr><td>2</td><td>Mercado de Capitais - Finanças</td><td>Preparatório</td><td><span class="bdg bg">85</span></td><td>11%</td><td>2,91x</td></tr>
+      <tr><td>3</td><td>Mercado de Capitais - Finanças</td><td>Pós-graduação</td><td><span class="bdg bg">80</span></td><td>9%</td><td>2,08x</td></tr>
+      <tr><td>4</td><td>Planejamento Financeiro - Finanças</td><td>MBA</td><td><span class="bdg bg">80</span></td><td>16%</td><td>0,93x</td></tr>
+      <tr><td>5</td><td>Gestão da Manutenção - Engenharia</td><td>Pós-graduação</td><td><span class="bdg bb">79</span></td><td>17%</td><td>1,88x</td></tr>
+      <tr><td>6</td><td>Direito Empresarial - Direito</td><td>MBA</td><td><span class="bdg bb">78</span></td><td>11%</td><td>2,28x</td></tr>
+      <tr><td>7</td><td>Indústria 4.0 - Engenharia</td><td>Capacitação</td><td><span class="bdg bb">78</span></td><td>30%</td><td>1,80x</td></tr>
+      <tr><td>8</td><td>Gestão de Projetos - Gestão</td><td>Capacitação</td><td><span class="bdg bb">77</span></td><td>13%</td><td>3,08x</td></tr>
+      <tr><td>9</td><td>Cloud Computing - Tecnologia</td><td>Corporativo</td><td><span class="bdg bb">77</span></td><td>13%</td><td>1,58x</td></tr>
+      <tr><td>10</td><td>Finanças Corporativas</td><td>Capacitação</td><td><span class="bdg bb">77</span></td><td>12%</td><td>2,92x</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="ftr">
+  <span>Analytics Dashboard — Educação Continuada · 2022–2025</span>
+  <span>28.000 matrículas · 12.000 alunos · R$ 341,3M receita</span>
+</div>
+</div>
+
+<script>
+const RL=["2022-02","2022-03","2022-04","2022-05","2022-06","2022-07","2022-08","2022-09","2022-10","2022-11","2022-12","2023-01","2023-02","2023-03","2023-04","2023-05","2023-06","2023-07","2023-08","2023-09","2023-10","2023-11","2023-12","2024-01","2024-02","2024-03","2024-04","2024-05","2024-06","2024-07","2024-08","2024-09","2024-10","2024-11","2024-12","2025-01","2025-02","2025-03","2025-04","2025-05","2025-06","2025-07","2025-08","2025-09","2025-10","2025-11","2025-12"];
+const RD=[1400350,4268538,4829558,5779273,5739773,6375602,6756918,6090124,6555371,6932363,6342674,6705725,6238399,7125266,6386800,6442504,6121952,6663384,6743479,6338647,6371201,6583190,6857256,6725420,6343674,6339552,6492567,6319552,6148303,6659820,5971518,6685961,7041250,7080026,6693661,7247645,5882447,6511582,6686613,6446315,6287076,5809717,6495886,6553656,6706820,6991848,6631335];
+const CQ=["2022Q1","2022Q2","2022Q3","2022Q4","2023Q1","2023Q2","2023Q3","2023Q4","2024Q1","2024Q2","2024Q3","2024Q4","2025Q1","2025Q2","2025Q3","2025Q4"];
+const CM=[1323,1621,1625,1646,1539,1607,1642,1663,1558,1601,1643,1612,1618,1523,1668,1627];
+const CTK=[14205,14016,14115,14279,14467,14029,14465,14536,14103,14156,14178,14799,13979,13779,14311,14508];
+const CEV=[6.27,6.29,5.42,5.71,5.26,4.6,7.13,6.86,5.84,6.06,5.72,5.46,6.55,6.96,6.89,6.27];
+const mm3=RD.map((_,i)=>i<1||i>RD.length-2?null:Math.round((RD[i-1]+RD[i]+RD[i+1])/3));
+const fmtM=v=>v>=1e6?'R$'+(v/1e6).toFixed(1)+'M':v>=1e3?'R$'+(v/1e3).toFixed(0)+'K':'R$'+v;
+const GC='rgba(0,0,0,.06)';const TC='#a0aec0';
+
+const baseAxes=(yFmt)=>({x:{grid:{color:GC},ticks:{color:TC,font:{size:9},maxTicksLimit:12,autoSkip:true,maxRotation:45}},y:{grid:{color:GC},ticks:{color:TC,font:{size:9},callback:yFmt||undefined}}});
+function mkLine(id,labels,datasets,yFmt){new Chart(document.getElementById(id),{type:'line',data:{labels,datasets},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:baseAxes(yFmt),animation:{duration:300}}});}
+function mkBar(id,labels,data,colors,horiz,extraDs){
+  const ds=extraDs||[{data,backgroundColor:colors,borderRadius:6,borderSkipped:false}];
+  const opts={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},animation:{duration:300}};
+  if(horiz){opts.indexAxis='y';opts.scales={x:{grid:{color:GC},ticks:{color:TC,font:{size:9}}},y:{grid:{color:GC},ticks:{color:TC,font:{size:9}}}};}
+  else opts.scales=baseAxes();
+  new Chart(document.getElementById(id),{type:'bar',data:{labels,datasets:ds},options:opts});
+}
+function mkDonut(id,labels,data,colors){new Chart(document.getElementById(id),{type:'doughnut',data:{labels,datasets:[{data,backgroundColor:colors,borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,cutout:'58%',plugins:{legend:{display:true,position:'bottom',labels:{color:'#4a5568',font:{size:10},boxWidth:10,padding:8}},tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${fmtM?fmtM(ctx.raw):ctx.raw.toLocaleString('pt-BR')}`}}},animation:{duration:300}}});}
+
+const recDS=[
+  {data:RD,borderColor:'#2a5298',backgroundColor:'rgba(42,82,152,.07)',fill:true,tension:.35,pointRadius:0,borderWidth:2.5},
+  {data:mm3,borderColor:'#b7791f',borderDash:[5,3],borderWidth:1.5,pointRadius:0,fill:false,spanGaps:false}
+];
+mkLine('cRecGeral',RL,recDS,v=>fmtM(v));
+mkLine('cRecFin',RL,recDS,v=>fmtM(v));
+
+mkDonut('cStatus',['Concluída 18.569','Cancelada 6.632','Ativa 1.679','Evadida 775','Trancada 345'],[18569,6632,1679,775,345],['#276749','#c53030','#2a5298','#b7791f','#718096']);
+mkBar('cCateg',['Corporativo','Pós-grad.','MBA','Capacitação','Preparatório'],[164722386,108986562,98765469,18358039,8598371],['#2a5298','#553c9a','#276749','#b7791f','#c05010']);
+mkDonut('cMod',['EAD R$173M','Híbrido R$102M','Presencial R$97M','Live R$28M'],[172970847,101911735,96574380,27973865],['#2a5298','#553c9a','#276749','#b7791f']);
+mkLine('cTicket',CQ,[{data:CTK,borderColor:'#276749',backgroundColor:'rgba(39,103,73,.07)',fill:true,tension:.35,pointRadius:4,pointBackgroundColor:'#276749',borderWidth:2.5}],v=>'R$'+v.toLocaleString('pt-BR'));
+mkLine('cCohortM',CQ,[{data:CM,borderColor:'#553c9a',backgroundColor:'rgba(85,60,154,.07)',fill:true,tension:.35,pointRadius:4,pointBackgroundColor:'#553c9a',borderWidth:2.5}],v=>v.toLocaleString('pt-BR'));
+mkBar('cEvasCat',['Preparatório','Capacitação','Pós-grad.','MBA','Corporativo'],[25.8,25.7,23.1,22.6,21.2],['#c53030','#c53030','#b7791f','#b7791f','#276749']);
+mkBar('cEvasCat2',['Preparatório','Capacitação','Pós-grad.','MBA','Corporativo'],[25.8,25.7,23.1,22.6,21.2],['#c53030','#c53030','#b7791f','#b7791f','#276749']);
+mkBar('cConcEvas',['EAD','Híbrido','Live','Presencial'],null,null,false,[
+  {label:'Conclusão',data:[59.1,73.3,75.4,72.0],backgroundColor:'#276749',borderRadius:5,borderSkipped:false},
+  {label:'Evasão',data:[33.1,20.3,17.3,20.7],backgroundColor:'#c53030',borderRadius:5,borderSkipped:false}
+]);
+mkLine('cCohortEv',CQ,[{data:CEV,borderColor:'#c53030',backgroundColor:'rgba(197,48,48,.07)',fill:true,tension:.35,pointRadius:4,pointBackgroundColor:'#c53030',borderWidth:2.5}],v=>v.toFixed(1)+'%');
+mkBar('cRoi',['E-mail','LinkedIn Ads','Google Ads','Parceiro','Evento','Meta Ads'],[2.04,2.07,2.34,2.40,2.54,2.93],['#b7791f','#b7791f','#2a5298','#276749','#276749','#276749'],true);
+mkBar('cInvest',['E-mail','Evento','Google','LinkedIn','Meta','Parceiro'],null,null,false,[
+  {label:'Invest.',data:[1425666,1467637,2266498,2515370,1652105,1677623],backgroundColor:'#553c9a',borderRadius:5,borderSkipped:false},
+  {label:'Leads',data:[44237,27389,59574,41027,45896,27124],backgroundColor:'#2a5298',borderRadius:5,borderSkipped:false}
+]);
+mkBar('cAging',['Até 30d','31–60d','61–90d','91–180d'],[2750800,4211959,4608008,5070091],['#276749','#b7791f','#c05010','#c53030']);
+mkDonut('cAgingD',['Até 30d 16,5%','31–60d 25,3%','61–90d 27,7%','91–180d 30,5%'],[2750800,4211959,4608008,5070091],['#276749','#b7791f','#c05010','#c53030']);
+mkBar('cNpsCat',['MBA','Capacitação','Preparatório','Corporativo','Pós-grad.'],[63.7,62.3,62.2,62.2,59.5],['#2a5298','#2a5298','#553c9a','#553c9a','#276749']);
+
+document.querySelectorAll('.nb').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('.nb').forEach(x=>x.classList.remove('on'));
+    document.querySelectorAll('.pg').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
+    document.getElementById('pg-'+b.dataset.p).classList.add('on');
+  });
+});
+</script>
+</body>
+</html>
