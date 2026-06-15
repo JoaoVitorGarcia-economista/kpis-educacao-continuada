@@ -1,0 +1,22 @@
+COMO RODAR O DASHBOARD
+======================
+
+1. Instalar dependências (só na primeira vez):
+   pip install streamlit plotly pandas
+
+2. Colocar esta pasta "dashboard" dentro do projeto:
+   educacao_continuada_VSCODE/
+   ├── dashboard/
+   │   └── dashboard.py   ← aqui
+   ├── outputs/           ← os CSVs precisam estar aqui
+   ├── main.py
+   └── ...
+
+3. Abrir o terminal na pasta do projeto (não dentro de dashboard/)
+
+4. Rodar:
+   streamlit run dashboard/dashboard.py
+
+5. O navegador abre automaticamente em http://localhost:8501
+
+OBS: Rode o pipeline primeiro (python main.py) para gerar os CSVs em outputs/
